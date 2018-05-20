@@ -2,6 +2,7 @@
 
 use strict;
 
+# tested ok on swift: DISTRIB_DESCRIPTION="Ubuntu 16.04.4 LTS"
 # kernel=        linux	/vmlinuz-4.13.0-41-generic root=/dev/mapper/xubuntu--vg-root ro  quiet splash $vt_handoff
 my($grubconf) = "/boot/grub/grub.cfg";
 
