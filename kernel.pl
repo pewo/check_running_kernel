@@ -23,24 +23,10 @@ if ( defined($arg) ) {
 #
 
 
-my($grubconf) = undef;
-my($search) = undef;
-
-if ( -f "/boot/grub2/grub.cfg" ) {
-	$grubconf = "/boot/grub2/grub.cfg";
-	$search = "linux";
-}
-elsif ( -f "/boot/grub/grub.conf" ) {
-	$grubconf = "/boot/grub/grub.conf";
-	$search = "kernel";
-}
-elsif ( -f "/boot/grub/grub.cfg" ) {
-	$grubconf = "/boot/grub/grub.cfg";
-	$search = "linux";
-}
-
 # version=Linux version 4.13.0-41-generic (buildd@lgw01-amd64-028) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.9)) #46~16.04.1-Ubuntu SMP Thu May 3 10:06:43 UTC 2018
 my($procver) = "/proc/version";
+
+
 
 sub debug($) {
 	return unless ( $debug );
@@ -67,67 +53,76 @@ sub readfile($) {
 	return(@res);
 }
 
+sub modules {
+	my($dir) = "/lib/modules";
+	my(@dir) = ();
+	foreach ( <$dir/*> ) {
+		my(@arr) = split(/\//,$_);
+		my($kernel) = $arr[-1];
+		next unless ( $kernel =~ /^\d/ );
+		push(@dir,$kernel);
+		debug("Adding $kernel to list of kernels");
+	}
+	return(@dir);
+}
+
+sub modsort {
+	my(@a) = split(/\D+/,$a);
+	my($astr) = join(" ","a:", @a, "\n");
+	debug("Sorting(a) $astr");
+	my(@b) = split(/\D+/,$b);
+	my($bstr) = join(" ","b:", @b, "\n");
+	debug("Sorting(b) $bstr");
+	my($sa);
+	foreach $sa ( @a ) {
+		my($sb) = shift(@b);
+		return(-1) unless ( defined($sb) );
+		my($diff ) = $sb <=> $sa;
+		if ( $diff ) {
+			return($diff);
+		}
+	}
+	return(0);
+}
+	
+sub latestmod() {
+	my(@mod) = modules();
+	debug("Sorting list of kernels");
+	my(@res) = sort modsort @mod;
+	return(shift(@res));
+}
+
+
 
 my($kernel) = undef;
-my(@grub);
-debug("*** grub **********************************************");
-if ( ! defined($grubconf) ) {
-	die "Unable to find grub configuration file";
-}
 
-if ( -r $grubconf ) {
-	@grub = readfile($grubconf);
-}
-else {
-	die "Could not read $grubconf: $!";
-}
+debug("*** installed **********************************************");
+$kernel = latestmod();
+debug("Latest kernel is $kernel");
 
 
-foreach ( @grub ) {
-	# $_="        linux	/vmlinuz-4.13.0-41-generic root=/dev/mapper/xubuntu--vg-root ro  quiet splash $vt_handoff"
-
-	s/^\s+//;
-	# $_="linux	/vmlinuz-4.13.0-41-generic root=/dev/mapper/xubuntu--vg-root ro  quiet splash $vt_handoff"
-
-	next unless ( m/^$search/ );
-	debug("Got something with $search:\n\"$_\"");
-
-	s/^$search\w*\s+//;
-	debug("Removed initial $search+space:\n\"$_\"");
-	# $_="/vmlinuz-4.13.0-41-generic root=/dev/mapper/xubuntu--vg-root ro  quiet splash $vt_handoff"
-
-	($kernel) = split(/\s+/,$_);
-	debug("Extract first field:\n\"$kernel\"");
-	# $kernel="/vmlinuz-4.13.0-41-generic"
-
-	next unless ( $kernel );
-
-	$kernel =~ s/^\D+-//;
-	debug("Removed starting characters:\n\"$kernel\"");
-	# $kernel="4.13.0-41-generic"
-	# $kernel="2.6.32-696.28.1.el6.x86_64"
+$kernel =~ s/^\D+-//;
+debug("Removed starting characters:\n\"$kernel\"");
+# $kernel="4.13.0-41-generic"
+# $kernel="2.6.32-696.28.1.el6.x86_64"
 
 	
-	if ( $kernel =~ /-\D+$/ ) {
-		$kernel =~ s/-\D+$//;
-		debug("Removed ending characters:\n\"$kernel\"");
-		# $kernel="4.13.0-41"
-	}
-	elsif ( $kernel =~ /\.\D+/ ) {
-		$kernel =~ s/\.\D+.*$//;
-		debug("Removed ending characters:\n\"$kernel\"");
-		# "2.6.32-696.28.1"
-	}
-
-	last;
+if ( $kernel =~ /-\D+$/ ) {
+	$kernel =~ s/-\D+$//;
+	debug("Removed ending characters:\n\"$kernel\"");
+	# $kernel="4.13.0-41"
 }
-die "Could not find $search in $grubconf, exiting...\n" unless ($kernel);
+elsif ( $kernel =~ /\.\D+/ ) {
+	$kernel =~ s/\.\D+.*$//;
+	debug("Removed ending characters:\n\"$kernel\"");
+	# "2.6.32-696.28.1"
+}
 
 
 debug("*** version **********************************************");
 my(@procver) = readfile($procver);
 my($version) = shift(@procver);
-debug("Retrieved version:\n\"$version\"");
+debug("Running kernel is $version");
 # version=Linux version 4.13.0-41-generic (buildd@lgw01-amd64-028) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.9)) #46~16.04.1-Ubuntu SMP Thu May 3 10:06:43 UTC 2018
 
 $version =~ s/^\D+//;
