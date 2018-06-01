@@ -12,16 +12,10 @@ if ( defined($arg) ) {
 # tested ok on dev: DISTRIB_DESCRIPTION="Linux Mint 18.1 Serena"
 # tested ok on centos6: CentOS release 6.9 (Final)
 # tested ok on centos7: CentOS Linux release 7.4.1708 (Core) 
-
-# Deb
-# kernel=        linux	/vmlinuz-4.13.0-41-generic root=/dev/mapper/xubuntu--vg-root ro  quiet splash $vt_handoff
-
-# Redhat/6
-# kernel="       kernel /vmlinuz-2.6.32-696.28.1.el6.x86_64 ro root=/dev/mapper/vg_cen"
-# Redhat/7
-# kernel="       linux16 /vmlinuz-3.10.0-693.21.1.el7.x86_64 root=/dev/mapper/centos_c"
-#
-
+# tested ok on Arch: by pebe
+# tested ok on Fedora Rawhide: by pebe
+# tested ok on CentOS 7.5: by pebe
+# tested ok on Raspbian: by pebe
 
 # version=Linux version 4.13.0-41-generic (buildd@lgw01-amd64-028) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.9)) #46~16.04.1-Ubuntu SMP Thu May 3 10:06:43 UTC 2018
 my($procver) = "/proc/version";
