@@ -13,6 +13,9 @@ foreach $pid ( </proc/*> ) {
 		my($dest) = readlink($_);
 		next unless ( defined($dest) );
 		next if ( $dest =~ /\/dev\// );
+		next if ( $dest =~ /cache/ );
+		next if ( $dest =~ /\/run\// );
+		next if ( $dest =~ /\/home\// );
 		if ( $dest =~ /(\s+\(.*\))/ ) {
 			$dest =~ s/\s+\(.*\)//;
 			next unless ( -r $dest );
