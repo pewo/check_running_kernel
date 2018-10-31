@@ -1,8 +1,5 @@
 #!/usr/bin/perl -w
 
-#
-# Date: Sat Sep 22 18:12:10 CEST 2018
-#
 use strict;
 my($debug) = 0;
 my($arg) = shift(@ARGV);
@@ -19,8 +16,7 @@ if ( defined($arg) ) {
 # tested ok on Fedora Rawhide: by pebe
 # tested ok on CentOS 7.5: by pebe
 # tested ok on Raspbian: by pebe
-# Does not report anythin useful on solaris: by pewo
-#
+# Does not report anything useful on Solaris: by pewo
 
 # version=Linux version 4.13.0-41-generic (buildd@lgw01-amd64-028) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.9)) #46~16.04.1-Ubuntu SMP Thu May 3 10:06:43 UTC 2018
 my($procver) = "/proc/version";
@@ -98,14 +94,16 @@ sub latestmod() {
 	}
 }
 
-#
-# Check if container, this must be improved...
-#
-if ( -f "/proc/user_beancounters" ) {
-	print "Unsupported system (container or openvz server)\n";
-	exit 0;
-}
 
+#
+# Check if container...
+# This is not the best test...
+#
+
+if ( -f "/proc/user_beancounters" ) {
+        print "Unsupported system (container)\n";
+        exit 0;
+}
 
 my($kernel) = undef;
 
@@ -115,9 +113,7 @@ unless ( $kernel ) {
 	print "Unsupported system (kernel)\n";
 	exit 0;
 }
-	
 debug("Latest kernel is $kernel");
-
 
 $kernel =~ s/^\D+-//;
 debug("Removed starting characters:\n\"$kernel\"");
